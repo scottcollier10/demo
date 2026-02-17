@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scott Collier | AI-Powered Marketing Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pure-black': '#000000',
+                        'pure-white': '#ffffff',
+                        'bold-orange': '#ff4500',
+                        'charcoal': '#333333',
+                        'light-gray': '#f5f5f5',
+                    },
+                    fontFamily: {
+                        'anton': ['Anton', 'sans-serif'],
+                        'bebas': ['Bebas Neue', 'sans-serif'],
+                        'serif': ['Source Serif Pro', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Source Serif Pro', serif;
+            overflow-x: hidden;
+        }
+
+        /* Editorial Typography */
+        .headline-massive {
+            font-family: 'Anton', sans-serif;
+            font-size: clamp(3rem, 12vw, 10rem);
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .headline-large {
+            font-family: 'Anton', sans-serif;
+            font-size: clamp(2rem, 6vw, 5rem);
+            line-height: 0.95;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+        }
+
+        .subhead {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .body-editorial {
+            font-family: 'Source Serif Pro', serif;
+            font-size: clamp(1rem, 1.2vw, 1.25rem);
+            line-height: 1.7;
+        }
+
+        /* Text Reveal Animation */
+        .reveal-text {
+            overflow: hidden;
+        }
+
+        .reveal-text span {
+            display: inline-block;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+        }
+
+        .reveal-text.revealed span {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Word Stagger Animation */
+        .stagger-words .word {
+            display: inline-block;
+            overflow: hidden;
+        }
+
+        .stagger-words .word-inner {
+            display: inline-block;
+            transform: translateY(110%);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .stagger-words.revealed .word-inner {
+            transform: translateY(0);
+        }
+
+        /* Line Animation */
+        .line-reveal {
+            width: 0;
+            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .line-reveal.revealed {
+            width: 100%;
+        }
+
+        /* Clip Reveal */
+        .clip-reveal {
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .clip-reveal.revealed {
+            clip-path: inset(0 0 0 0);
+        }
+
+        /* Fade Up */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fade-up.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Editorial Grid Lines */
+        .grid-line {
+            position: absolute;
+            background: rgba(255, 69, 0, 0.1);
+        }
+
+        .grid-line-v {
+            width: 1px;
+            height: 100%;
+            top: 0;
+        }
+
+        .grid-line-h {
+            height: 1px;
+            width: 100%;
+            left: 0;
+        }
+
+        /* CTA Buttons */
+        .cta-primary {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 0.2em;
+            background: #ff4500;
+            color: #000;
+            padding: 1rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .cta-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            transition: left 0.4s ease;
+        }
+
+        .cta-primary:hover::before {
+            left: 0;
+        }
+
+        .cta-primary span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-secondary {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 0.2em;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 1rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .cta-secondary:hover {
+            border-color: #ff4500;
+            color: #ff4500;
+        }
+
+        /* Product Cards - Editorial Style */
+        .product-card {
+            border-left: 3px solid #ff4500;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 0;
+            background: #fff;
+            transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .product-card:hover::before {
+            height: 100%;
+        }
+
+        /* Issue Number Style */
+        .issue-number {
+            font-family: 'Anton', sans-serif;
+            font-size: 8rem;
+            line-height: 1;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 69, 0, 0.3);
+            position: absolute;
+            right: 0;
+            top: -20px;
+        }
+
+        /* Scrolling Marquee */
+        .marquee {
+            display: flex;
+            animation: marquee 30s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff4500;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .issue-number {
+                font-size: 4rem;
+            }
+
+            .product-card {
+                padding-left: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Editorial Grid Overlay -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="grid-line grid-line-v" style="left: 8.33%"></div>
+        <div class="grid-line grid-line-v" style="left: 25%"></div>
+        <div class="grid-line grid-line-v" style="left: 50%"></div>
+        <div class="grid-line grid-line-v" style="left: 75%"></div>
+        <div class="grid-line grid-line-v" style="left: 91.67%"></div>
+    </div>
+
+    <!-- Navigation - Editorial Masthead -->
+    <nav class="fixed top-0 left-0 right-0 z-50 mix-blend-difference">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+            <div class="subhead text-white">Scott Collier</div>
+            <div class="flex gap-8">
+                <a href="#work" class="subhead text-white hover:text-bold-orange transition-colors text-sm">Work</a>
+                <a href="#contact" class="subhead text-white hover:text-bold-orange transition-colors text-sm">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - Editorial Spread -->
+    <section class="min-h-screen relative flex items-center">
+        <!-- Abstract Editorial SVG -->
+        <svg class="absolute right-0 top-0 h-full w-1/2 opacity-5" viewBox="0 0 400 800" preserveAspectRatio="xMaxYMid slice">
+            <defs>
+                <pattern id="editorial-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="40" y2="40" stroke="#ff4500" stroke-width="0.5"/>
+                </pattern>
+            </defs>
+            <rect fill="url(#editorial-pattern)" width="100%" height="100%"/>
+            <circle cx="300" cy="200" r="100" fill="none" stroke="#ff4500" stroke-width="1"/>
+            <rect x="50" y="400" width="200" height="200" fill="none" stroke="#ff4500" stroke-width="1"/>
+        </svg>
+
+        <div class="max-w-7xl mx-auto px-6 pt-32 pb-20 relative z-10">
+            <!-- Issue Tag -->
+            <div class="mb-12 fade-up">
+                <span class="subhead text-bold-orange text-sm tracking-[0.3em]">Issue 001 / AI Automation</span>
+            </div>
+
+            <!-- Main Headline - Asymmetric Layout -->
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 lg:col-span-10">
+                    <h1 class="headline-massive text-white mb-2">
+                        <div class="reveal-text"><span>AI-Powered</span></div>
+                    </h1>
+                    <h1 class="headline-massive text-bold-orange mb-2">
+                        <div class="reveal-text" style="transition-delay: 0.15s"><span>Marketing</span></div>
+                    </h1>
+                    <h1 class="headline-massive text-white">
+                        <div class="reveal-text" style="transition-delay: 0.3s"><span>Automation.</span></div>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Secondary Headlines -->
+            <div class="grid grid-cols-12 gap-4 mt-8">
+                <div class="col-span-12 lg:col-start-3 lg:col-span-6">
+                    <h2 class="headline-large text-charcoal stagger-words">
+                        <span class="word"><span class="word-inner">Built</span></span>
+                        <span class="word"><span class="word-inner">Custom.</span></span>
+                        <span class="word"><span class="word-inner text-white">Owned</span></span>
+                        <span class="word"><span class="word-inner text-white">Forever.</span></span>
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Editorial Divider -->
+            <div class="my-16">
+                <div class="line-reveal h-px bg-bold-orange"></div>
+            </div>
+
+            <!-- Subhead and CTAs - Magazine Layout -->
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-12 lg:col-span-5 fade-up">
+                    <p class="body-editorial text-gray-400 text-xl leading-relaxed">
+                        I build automation systems with <span class="text-bold-orange font-semibold">Claude AI</span>.
+                        Not SaaS&mdash;you own the infrastructure. Forever.
+                    </p>
+                </div>
+                <div class="col-span-12 lg:col-start-8 lg:col-span-5 fade-up" style="transition-delay: 0.2s">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#work" class="cta-primary"><span>See Live Demos</span></a>
+                        <a href="#contact" class="cta-secondary">Book Discovery Call</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-12 left-6 fade-up" style="transition-delay: 0.6s">
+                <div class="flex items-center gap-4">
+                    <div class="w-px h-16 bg-bold-orange"></div>
+                    <span class="subhead text-xs tracking-[0.3em] text-gray-500 rotate-90 origin-left translate-x-8">Scroll</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marquee Divider -->
+    <section class="py-8 border-y border-charcoal overflow-hidden">
+        <div class="marquee whitespace-nowrap">
+            <span class="subhead text-2xl text-charcoal mx-8">Custom Infrastructure</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">AI-First Approach</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">Full Ownership</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">Zero Recurring Fees</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">Custom Infrastructure</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">AI-First Approach</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">Full Ownership</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+            <span class="subhead text-2xl text-charcoal mx-8">Zero Recurring Fees</span>
+            <span class="text-bold-orange mx-4">&bull;</span>
+        </div>
+    </section>
+
+    <!-- Work Section - Editorial Feature -->
+    <section id="work" class="py-32 relative">
+        <!-- Section Editorial Mark -->
+        <svg class="absolute left-0 top-32 w-32 h-32 opacity-10" viewBox="0 0 100 100">
+            <rect x="10" y="10" width="80" height="80" fill="none" stroke="#ff4500" stroke-width="2"/>
+            <line x1="10" y1="10" x2="90" y2="90" stroke="#ff4500" stroke-width="1"/>
+            <line x1="90" y1="10" x2="10" y2="90" stroke="#ff4500" stroke-width="1"/>
+        </svg>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <!-- Section Header - Editorial Style -->
+            <div class="grid grid-cols-12 gap-8 mb-24">
+                <div class="col-span-12 lg:col-span-3">
+                    <span class="subhead text-bold-orange text-sm tracking-[0.3em] fade-up">Featured Work</span>
+                </div>
+                <div class="col-span-12 lg:col-span-9">
+                    <h2 class="headline-large text-white fade-up">
+                        Automation Systems<br/>
+                        <span class="text-charcoal">That Generate Results</span>
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Product Cards - Magazine Grid -->
+            <div class="grid grid-cols-12 gap-8 lg:gap-16">
+
+                <!-- Product 1 -->
+                <div class="col-span-12 lg:col-span-4 relative fade-up">
+                    <div class="product-card py-8">
+                        <span class="issue-number">01</span>
+                        <span class="subhead text-bold-orange text-sm tracking-[0.3em] mb-4 block">HubSpot Integration</span>
+                        <h3 class="headline-large text-white mb-6" style="font-size: clamp(1.5rem, 3vw, 2.5rem)">
+                            Content<br/>Generator
+                        </h3>
+                        <p class="body-editorial text-gray-400 mb-8">
+                            Automated email sequences powered by AI. From brief to inbox in 15 seconds flat.
+                        </p>
+                        <div class="space-y-4 border-t border-charcoal pt-6">
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Processing Time</span>
+                                <span class="font-serif text-bold-orange font-semibold">15 seconds</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Annual Savings</span>
+                                <span class="font-serif text-white font-semibold">230+ hours</span>
+                            </div>
+                        </div>
+                        <!-- Editorial Arrow -->
+                        <div class="mt-8">
+                            <svg class="w-8 h-8 text-bold-orange" viewBox="0 0 32 32" fill="none">
+                                <path d="M8 24L24 8M24 8H12M24 8V20" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="col-span-12 lg:col-span-4 relative fade-up lg:mt-24" style="transition-delay: 0.15s">
+                    <div class="product-card py-8">
+                        <span class="issue-number">02</span>
+                        <span class="subhead text-bold-orange text-sm tracking-[0.3em] mb-4 block">Slack Integration</span>
+                        <h3 class="headline-large text-white mb-6" style="font-size: clamp(1.5rem, 3vw, 2.5rem)">
+                            Lead Qualification<br/>Pipeline
+                        </h3>
+                        <p class="body-editorial text-gray-400 mb-8">
+                            AI-powered lead scoring delivered directly to Slack. Know your best prospects instantly.
+                        </p>
+                        <div class="space-y-4 border-t border-charcoal pt-6">
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Processing Time</span>
+                                <span class="font-serif text-bold-orange font-semibold">30 seconds</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Weekly Savings</span>
+                                <span class="font-serif text-white font-semibold">15+ hours</span>
+                            </div>
+                        </div>
+                        <!-- Editorial Arrow -->
+                        <div class="mt-8">
+                            <svg class="w-8 h-8 text-bold-orange" viewBox="0 0 32 32" fill="none">
+                                <path d="M8 24L24 8M24 8H12M24 8V20" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="col-span-12 lg:col-span-4 relative fade-up lg:mt-48" style="transition-delay: 0.3s">
+                    <div class="product-card py-8">
+                        <span class="issue-number">03</span>
+                        <span class="subhead text-bold-orange text-sm tracking-[0.3em] mb-4 block">Compliance System</span>
+                        <h3 class="headline-large text-white mb-6" style="font-size: clamp(1.5rem, 3vw, 2.5rem)">
+                            Campaign<br/>Auditor
+                        </h3>
+                        <p class="body-editorial text-gray-400 mb-8">
+                            Instant brand compliance audits. Catch issues before they become problems.
+                        </p>
+                        <div class="space-y-4 border-t border-charcoal pt-6">
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Audit Speed</span>
+                                <span class="font-serif text-bold-orange font-semibold">Instant</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="subhead text-xs text-gray-500 tracking-[0.2em]">Key Benefit</span>
+                                <span class="font-serif text-white font-semibold">Risk Mitigation</span>
+                            </div>
+                        </div>
+                        <!-- Editorial Arrow -->
+                        <div class="mt-8">
+                            <svg class="w-8 h-8 text-bold-orange" viewBox="0 0 32 32" fill="none">
+                                <path d="M8 24L24 8M24 8H12M24 8V20" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Editorial Quote Section -->
+    <section class="py-32 bg-charcoal relative overflow-hidden">
+        <!-- Large Editorial Mark -->
+        <svg class="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 opacity-5" viewBox="0 0 200 200">
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Anton" font-size="180" fill="#ff4500">&ldquo;</text>
+        </svg>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-12 lg:col-start-2 lg:col-span-10">
+                    <blockquote class="fade-up">
+                        <p class="headline-large text-white leading-tight mb-12">
+                            The future belongs to companies that<br/>
+                            <span class="text-bold-orange">own their automation</span>&mdash;<br/>
+                            not rent it.
+                        </p>
+                        <footer class="flex items-center gap-6">
+                            <div class="w-16 h-px bg-bold-orange"></div>
+                            <div>
+                                <cite class="subhead text-white not-italic tracking-[0.2em]">Scott Collier</cite>
+                                <p class="font-serif text-gray-400 text-sm mt-1">AI Automation Architect</p>
+                            </div>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology Section - Editorial Layout -->
+    <section class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-12 gap-8">
+                <!-- Left Column - Sticky Header -->
+                <div class="col-span-12 lg:col-span-4">
+                    <div class="lg:sticky lg:top-32">
+                        <span class="subhead text-bold-orange text-sm tracking-[0.3em] mb-4 block fade-up">The Process</span>
+                        <h2 class="headline-large text-white fade-up" style="transition-delay: 0.1s">
+                            How It<br/>Works
+                        </h2>
+                        <div class="mt-8 fade-up" style="transition-delay: 0.2s">
+                            <svg class="w-24 h-24 text-bold-orange opacity-20" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="1"/>
+                                <path d="M50 20 L50 50 L70 50" fill="none" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Steps -->
+                <div class="col-span-12 lg:col-span-7 lg:col-start-6 space-y-16">
+                    <div class="border-l-2 border-charcoal pl-8 fade-up">
+                        <span class="subhead text-bold-orange text-4xl">01</span>
+                        <h3 class="headline-large text-white mt-4 mb-4" style="font-size: 2rem">Discovery</h3>
+                        <p class="body-editorial text-gray-400">
+                            We map your current workflows, identify automation opportunities,
+                            and define success metrics. No generic templates&mdash;everything custom.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-charcoal pl-8 fade-up" style="transition-delay: 0.1s">
+                        <span class="subhead text-bold-orange text-4xl">02</span>
+                        <h3 class="headline-large text-white mt-4 mb-4" style="font-size: 2rem">Build</h3>
+                        <p class="body-editorial text-gray-400">
+                            I architect and develop your automation system using Claude AI,
+                            integrating directly with your existing tools and infrastructure.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-charcoal pl-8 fade-up" style="transition-delay: 0.2s">
+                        <span class="subhead text-bold-orange text-4xl">03</span>
+                        <h3 class="headline-large text-white mt-4 mb-4" style="font-size: 2rem">Deploy & Transfer</h3>
+                        <p class="body-editorial text-gray-400">
+                            You receive complete ownership&mdash;all code, documentation,
+                            and infrastructure. No subscriptions. No dependencies. It&rsquo;s yours.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section - Editorial Footer -->
+    <section id="contact" class="py-32 border-t border-charcoal relative">
+        <!-- Abstract Editorial Element -->
+        <svg class="absolute left-1/2 -top-16 -translate-x-1/2 w-32 h-32" viewBox="0 0 100 100">
+            <rect x="25" y="25" width="50" height="50" fill="#ff4500"/>
+        </svg>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-12 gap-8">
+                <div class="col-span-12 lg:col-span-6 fade-up">
+                    <span class="subhead text-bold-orange text-sm tracking-[0.3em] mb-4 block">Get In Touch</span>
+                    <h2 class="headline-massive text-white" style="font-size: clamp(2.5rem, 8vw, 6rem)">
+                        Let&rsquo;s<br/>Build.
+                    </h2>
+                </div>
+                <div class="col-span-12 lg:col-span-5 lg:col-start-8 flex flex-col justify-center fade-up" style="transition-delay: 0.15s">
+                    <div class="space-y-8">
+                        <div>
+                            <span class="subhead text-xs text-gray-500 tracking-[0.3em] block mb-2">Email</span>
+                            <a href="mailto:scott@scottcollier.com" class="headline-large text-white hover:text-bold-orange transition-colors" style="font-size: clamp(1.2rem, 2.5vw, 1.8rem)">
+                                scott@scottcollier.com
+                            </a>
+                        </div>
+                        <div>
+                            <span class="subhead text-xs text-gray-500 tracking-[0.3em] block mb-2">Location</span>
+                            <p class="headline-large text-white" style="font-size: clamp(1.2rem, 2.5vw, 1.8rem)">
+                                Round Rock, TX
+                            </p>
+                        </div>
+                        <div class="pt-8">
+                            <a href="mailto:scott@scottcollier.com" class="cta-primary inline-block">
+                                <span>Book Discovery Call</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer - Editorial Colophon -->
+    <footer class="py-12 border-t border-charcoal">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-12 gap-8 items-center">
+                <div class="col-span-12 lg:col-span-4">
+                    <span class="subhead text-white tracking-[0.2em]">Scott Collier</span>
+                </div>
+                <div class="col-span-12 lg:col-span-4 text-center">
+                    <p class="font-serif text-gray-500 text-sm">
+                        &copy; 2024 All Rights Reserved
+                    </p>
+                </div>
+                <div class="col-span-12 lg:col-span-4 text-right">
+                    <span class="subhead text-xs text-gray-500 tracking-[0.3em]">AI Automation Architect</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Intersection Observer for Reveal Animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.reveal-text, .stagger-words, .line-reveal, .clip-reveal, .fade-up').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // Stagger delay for word animations
+        document.querySelectorAll('.stagger-words').forEach(container => {
+            const words = container.querySelectorAll('.word-inner');
+            words.forEach((word, index) => {
+                word.style.transitionDelay = `${index * 0.08}s`;
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Parallax effect for editorial elements
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrolled = window.pageYOffset;
+
+                    // Subtle parallax for issue numbers
+                    document.querySelectorAll('.issue-number').forEach(el => {
+                        const speed = 0.05;
+                        const rect = el.getBoundingClientRect();
+                        if (rect.top < window.innerHeight && rect.bottom > 0) {
+                            el.style.transform = `translateY(${scrolled * speed}px)`;
+                        }
+                    });
+
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Initial reveal for above-fold content
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelectorAll('section:first-of-type .reveal-text, section:first-of-type .stagger-words, section:first-of-type .line-reveal, section:first-of-type .fade-up').forEach(el => {
+                    el.classList.add('revealed');
+                });
+            }, 100);
+        });
+    </script>
+
+</body>
+</html>

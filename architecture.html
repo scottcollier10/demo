@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Prototype to Production | AI Automation Architecture | Scott Collier</title>
+    <meta name="description" content="See how I build AI automation systems that start fast (n8n prototype) and scale forever (production code). Get both speed and ownership.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange-primary: #f97316;
+            --orange-light: #fb923c;
+            --amber: #fbbf24;
+            --coral: #ff6b6b;
+            --peach: #ffb4a2;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #1a0a00 0%, #0d0d0d 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Animated gradient background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg,
+                #1a0a00 0%,
+                #1f1410 25%,
+                #0d0d0d 50%,
+                #0a0a0a 75%,
+                #120808 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Floating orbs - warm orange tones */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--orange-primary) 0%, transparent 70%);
+            top: -250px;
+            left: -200px;
+            animation: float1 25s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            animation: float2 22s ease-in-out infinite;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--coral) 0%, transparent 70%);
+            top: 50%;
+            left: 60%;
+            animation: float3 28s ease-in-out infinite;
+        }
+
+        .orb-4 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--peach) 0%, transparent 70%);
+            top: 70%;
+            left: 5%;
+            animation: float4 30s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 40px) scale(1.05); }
+            66% { transform: translate(40px, 80px) scale(0.98); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-60px, -30px) scale(1.03); }
+            66% { transform: translate(-30px, 50px) scale(1.08); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-80px, 60px) scale(1.1); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, -40px) scale(1.05); }
+        }
+
+        /* Glass panel styles */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow:
+                0 8px 32px var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-subtle {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+        }
+
+        /* Floating card effect */
+        .floating-card {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .floating-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            box-shadow:
+                0 25px 50px rgba(249, 115, 22, 0.15),
+                0 10px 30px var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glow button */
+        .glow-btn {
+            position: relative;
+            background: linear-gradient(135deg, var(--orange-primary), var(--amber));
+            border: none;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 25px rgba(249, 115, 22, 0.35);
+        }
+
+        .glow-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .glow-btn:hover::before {
+            left: 100%;
+        }
+
+        .glow-btn:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 35px rgba(249, 115, 22, 0.45),
+                0 0 60px rgba(249, 115, 22, 0.2);
+        }
+
+        /* Glass button */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.08);
+        }
+
+        /* Trust badge */
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+        }
+
+        .trust-badge:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .trust-badge svg {
+            color: var(--amber);
+        }
+
+        /* Icon container */
+        .icon-container {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(251, 191, 36, 0.25));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+        }
+
+        /* Stat pill */
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(251, 191, 36, 0.15));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, var(--amber) 50%, var(--orange-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-text-warm {
+            background: linear-gradient(135deg, var(--orange-light) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scroll reveal animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+        .delay-5 { transition-delay: 0.5s; }
+
+        /* Section divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.3), transparent);
+            margin: 60px 0;
+        }
+
+        /* Phase indicator */
+        .phase-indicator {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--amber));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        /* Connector line */
+        .connector-line {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(249, 115, 22, 0.5), transparent);
+        }
+
+        /* Check list */
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(251, 191, 36, 0.3));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
+            color: var(--amber);
+        }
+
+        /* Code block */
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+
+        .code-block .comment { color: rgba(255, 255, 255, 0.4); }
+        .code-block .keyword { color: var(--orange-light); }
+        .code-block .string { color: var(--amber); }
+        .code-block .function { color: var(--peach); }
+
+        /* Comparison table */
+        .comparison-cell {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .comparison-highlight {
+            background: rgba(249, 115, 22, 0.08);
+        }
+
+        /* Architecture node */
+        .arch-node {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .arch-node:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(249, 115, 22, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .arch-node-primary {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(251, 191, 36, 0.15));
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        /* Flow arrow animation */
+        @keyframes flowPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .flow-dot {
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+
+        /* Roadmap connector */
+        .roadmap-line {
+            position: absolute;
+            top: 28px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                var(--orange-primary) 0%,
+                var(--amber) 33%,
+                var(--peach) 66%,
+                rgba(255, 255, 255, 0.2) 100%
+            );
+            z-index: 0;
+        }
+
+        .roadmap-node {
+            position: relative;
+            z-index: 1;
+        }
+
+        .roadmap-dot {
+            width: 16px;
+            height: 16px;
+            background: var(--orange-primary);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Metric card */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-4px);
+        }
+
+        .metric-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--orange-light), var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .orb { opacity: 0.25; }
+            .orb-1, .orb-2 { width: 300px; height: 300px; }
+            .orb-3, .orb-4 { width: 200px; height: 200px; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(249, 115, 22, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(249, 115, 22, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="gradient-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+
+    <!-- Main content -->
+    <main class="relative z-10">
+
+        <!-- Navigation -->
+        <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <a href="portfolio-design-3.html" class="text-white font-semibold text-lg hover:text-amber-400 transition-colors">Scott Collier</a>
+                <div class="flex gap-6">
+                    <a href="#methodology" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Methodology</a>
+                    <a href="#case-study" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Case Study</a>
+                    <a href="#contact" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Contact</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="min-h-screen flex items-center justify-center px-4 py-24">
+            <div class="max-w-5xl mx-auto">
+                <div class="glass-panel p-8 md:p-14 text-center">
+                    <!-- Pre-headline badge -->
+                    <div class="reveal inline-flex items-center gap-2 px-4 py-2 mb-8 bg-gradient-to-r from-orange-500/15 to-amber-500/15 rounded-full border border-white/10">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-white/85">Technical Architecture Deep-Dive</span>
+                    </div>
+
+                    <!-- Main headline -->
+                    <h1 class="reveal delay-1 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+                        <span class="text-white">From Prototype</span>
+                        <br>
+                        <span class="gradient-text">To Production</span>
+                    </h1>
+
+                    <!-- Subheadline -->
+                    <p class="reveal delay-2 text-xl md:text-2xl text-white/50 font-light mb-8">
+                        How I Build AI Automation Systems That Last
+                    </p>
+
+                    <!-- Description -->
+                    <p class="reveal delay-3 text-base md:text-lg text-white/65 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Most automation tools force you to choose: <span class="text-white">speed</span> or <span class="text-white">ownership</span>.
+                        I give you both. Start with a working prototype in hours, then transform it into
+                        production-ready code that you own forever.
+                    </p>
+
+                    <!-- Trust badges -->
+                    <div class="reveal delay-4 flex flex-wrap gap-3 justify-center">
+                        <div class="trust-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Validate in hours
+                        </div>
+                        <div class="trust-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Production-grade code
+                        </div>
+                        <div class="trust-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Complete ownership
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Methodology Section -->
+        <section id="methodology" class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <!-- Section header -->
+                <div class="text-center mb-16">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Three Phases. <span class="gradient-text-warm">One Complete Solution.</span>
+                    </h2>
+                    <p class="reveal delay-1 text-white/55 text-lg max-w-2xl mx-auto">
+                        A proven methodology that delivers speed without sacrificing quality or ownership
+                    </p>
+                </div>
+
+                <!-- Phase cards -->
+                <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+
+                    <!-- Phase 1: Prototype -->
+                    <div class="reveal delay-1 glass-panel floating-card p-8 relative">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="phase-indicator">1</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Prototype</h3>
+                                <p class="text-amber-400 text-sm font-medium">Prove It Works</p>
+                            </div>
+                        </div>
+
+                        <p class="text-white/60 mb-6 leading-relaxed">
+                            I start with n8n, a visual workflow builder that lets us validate concepts before investing in production code.
+                        </p>
+
+                        <div class="space-y-2 mb-6">
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Validate concepts in hours</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Real-time client feedback</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Test with actual APIs</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Demo working prototypes</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-white/10 pt-5 space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Timeline</span>
+                                <span class="text-amber-400 font-semibold">4-8 hours</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Outcome</span>
+                                <span class="text-white font-medium">Working proof-of-concept</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            <span class="stat-pill text-xs">n8n</span>
+                            <span class="stat-pill text-xs">Claude AI</span>
+                            <span class="stat-pill text-xs">APIs</span>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2: Productionize -->
+                    <div class="reveal delay-2 glass-panel floating-card p-8 relative">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="phase-indicator">2</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Productionize</h3>
+                                <p class="text-amber-400 text-sm font-medium">Build It Right</p>
+                            </div>
+                        </div>
+
+                        <p class="text-white/60 mb-6 leading-relaxed">
+                            Once validated, I convert to production-grade code with proper architecture and engineering best practices.
+                        </p>
+
+                        <div class="space-y-2 mb-6">
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Service-oriented architecture</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Pluggable data sources</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Full test coverage</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Version control (Git)</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-white/10 pt-5 space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Timeline</span>
+                                <span class="text-amber-400 font-semibold">1-2 weeks</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Outcome</span>
+                                <span class="text-white font-medium">Production-ready app</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            <span class="stat-pill text-xs">Python</span>
+                            <span class="stat-pill text-xs">Flask</span>
+                            <span class="stat-pill text-xs">Docker</span>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3: Transfer -->
+                    <div class="reveal delay-3 glass-panel floating-card p-8 relative">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="phase-indicator">3</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Transfer</h3>
+                                <p class="text-amber-400 text-sm font-medium">Own It Forever</p>
+                            </div>
+                        </div>
+
+                        <p class="text-white/60 mb-6 leading-relaxed">
+                            You receive complete ownership. No vendor lock-in, no subscriptions, no dependencies on me.
+                        </p>
+
+                        <div class="space-y-2 mb-6">
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">All source code</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Docker deployment</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">Full documentation</span>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <span class="text-white/80 text-sm">30-day support</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-white/10 pt-5 space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Timeline</span>
+                                <span class="text-amber-400 font-semibold">1 day handoff</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Outcome</span>
+                                <span class="text-white font-medium">Complete ownership</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            <span class="stat-pill text-xs">Docker</span>
+                            <span class="stat-pill text-xs">Cloud-Ready</span>
+                            <span class="stat-pill text-xs">Self-Hosted</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Why This <span class="gradient-text-warm">Beats The Alternatives</span>
+                    </h2>
+                </div>
+
+                <div class="reveal delay-1 glass-panel p-6 md:p-8 overflow-x-auto">
+                    <table class="w-full min-w-[600px]">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="comparison-cell text-left text-white/60 font-medium text-sm">Approach</th>
+                                <th class="comparison-cell text-center text-white/60 font-medium text-sm">No-Code Only</th>
+                                <th class="comparison-cell text-center text-white/60 font-medium text-sm">Code Only</th>
+                                <th class="comparison-cell comparison-highlight text-center font-medium text-sm text-amber-400">My Hybrid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Speed to Validate</td>
+                                <td class="comparison-cell text-center text-emerald-400">Fast</td>
+                                <td class="comparison-cell text-center text-red-400">Slow</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Fast</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Production Quality</td>
+                                <td class="comparison-cell text-center text-amber-400">Limited</td>
+                                <td class="comparison-cell text-center text-emerald-400">Professional</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Professional</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Client Ownership</td>
+                                <td class="comparison-cell text-center text-red-400">Lock-in</td>
+                                <td class="comparison-cell text-center text-emerald-400">Full</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Full</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Maintainability</td>
+                                <td class="comparison-cell text-center text-emerald-400">Visual UI</td>
+                                <td class="comparison-cell text-center text-amber-400">Requires devs</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Documented</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Version Control</td>
+                                <td class="comparison-cell text-center text-red-400">None</td>
+                                <td class="comparison-cell text-center text-emerald-400">Full Git</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Full Git</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium">Automated Testing</td>
+                                <td class="comparison-cell text-center text-red-400">Manual only</td>
+                                <td class="comparison-cell text-center text-emerald-400">Yes</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold">Yes</td>
+                            </tr>
+                            <tr>
+                                <td class="comparison-cell text-white font-medium border-b-0">Cost Model</td>
+                                <td class="comparison-cell text-center text-amber-400 border-b-0">Monthly forever</td>
+                                <td class="comparison-cell text-center text-amber-400 border-b-0">High upfront</td>
+                                <td class="comparison-cell comparison-highlight text-center text-emerald-400 font-semibold border-b-0">One-time</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quote Section -->
+        <section class="py-16 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="reveal glass-panel-subtle p-8 md:p-12 text-center relative">
+                    <svg class="absolute top-4 left-6 w-12 h-12 text-orange-500/20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <blockquote>
+                        <p class="text-xl md:text-2xl text-white/90 font-light leading-relaxed mb-6">
+                            The best automation systems start fast and scale forever.
+                            <span class="gradient-text-warm font-medium">That's why I prototype in hours, then productionize for ownership.</span>
+                        </p>
+                        <footer class="flex items-center justify-center gap-4">
+                            <div class="w-12 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+                            <div>
+                                <cite class="text-white font-semibold not-italic">Scott Collier</cite>
+                                <p class="text-white/50 text-sm">AI Automation Architect</p>
+                            </div>
+                            <div class="w-12 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <!-- Case Study Section -->
+        <section id="case-study" class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="reveal inline-block px-4 py-1 mb-4 text-sm font-medium text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
+                        Real Example
+                    </span>
+                    <h2 class="reveal delay-1 text-3xl md:text-4xl font-bold text-white mb-4">
+                        Case Study: <span class="gradient-text-warm">HubSpot Content Generator</span>
+                    </h2>
+                    <p class="reveal delay-2 text-white/55 text-lg">From Weekend Prototype to Production System</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Journey -->
+                    <div class="reveal delay-2 glass-panel p-8">
+                        <h3 class="text-xl font-bold text-white mb-8">The Journey</h3>
+
+                        <!-- Friday -->
+                        <div class="mb-8 relative pl-6 border-l-2 border-orange-500/50">
+                            <div class="absolute -left-[9px] top-0 w-4 h-4 bg-orange-500 rounded-full"></div>
+                            <span class="text-amber-400 text-sm font-semibold">Friday Night</span>
+                            <h4 class="text-lg font-bold text-white mt-1 mb-3">Prototype</h4>
+                            <p class="text-white/60 text-sm mb-3">Built n8n workflow in 6 hours</p>
+                            <div class="space-y-2">
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Slack command interface</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Google Drive brand context</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Claude AI generation</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-orange-400 font-medium text-sm">Result: Working demo for Monday</p>
+                        </div>
+
+                        <!-- Following Week -->
+                        <div class="relative pl-6 border-l-2 border-white/20">
+                            <div class="absolute -left-[9px] top-0 w-4 h-4 bg-white/50 rounded-full"></div>
+                            <span class="text-white/50 text-sm font-semibold">Following Week</span>
+                            <h4 class="text-lg font-bold text-white mt-1 mb-3">Production</h4>
+                            <p class="text-white/60 text-sm mb-3">Converted to Python application</p>
+                            <div class="space-y-2">
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Service-oriented architecture</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Docker deployment</span>
+                                </div>
+                                <div class="check-item">
+                                    <div class="check-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span class="text-white/75 text-sm">Full test suite</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-white font-medium text-sm">Result: Client-owned infrastructure</p>
+                        </div>
+                    </div>
+
+                    <!-- Outcome -->
+                    <div class="reveal delay-3 space-y-6">
+                        <div class="glass-panel-subtle p-6">
+                            <h4 class="text-red-400/80 text-sm font-semibold mb-4 uppercase tracking-wide">From Manual Process</h4>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">Time per campaign</span>
+                                    <span class="text-white font-mono text-lg">6 hours</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">Copywriter costs</span>
+                                    <span class="text-white font-mono text-lg">$450</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white/60">40 campaigns/year</span>
+                                    <span class="text-red-400 font-mono text-lg">$18,000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 border-orange-500/30">
+                            <h4 class="text-emerald-400 text-sm font-semibold mb-4 uppercase tracking-wide">To Automated System</h4>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">Time per campaign</span>
+                                    <span class="text-white font-mono text-lg">15 seconds</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">One-time build</span>
+                                    <span class="text-white font-mono text-lg">$8,500</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white/60">Operating cost</span>
+                                    <span class="text-emerald-400 font-mono text-lg">$50/month</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ROI Metrics -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="metric-card">
+                                <div class="metric-value">$17.5k</div>
+                                <div class="text-white/50 text-xs mt-1">Annual Savings</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">5.7</div>
+                                <div class="text-white/50 text-xs mt-1">Month Payback</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">100%</div>
+                                <div class="text-white/50 text-xs mt-1">Client Owns</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Under The Hood: <span class="gradient-text-warm">Production Architecture</span>
+                    </h2>
+                </div>
+
+                <!-- Architecture Flow -->
+                <div class="reveal delay-1 glass-panel p-8 mb-10">
+                    <div class="flex flex-col items-center gap-4">
+                        <!-- Slack Command -->
+                        <div class="arch-node arch-node-primary w-full max-w-md">
+                            <div class="font-mono text-sm text-amber-400 mb-1">Slack Command Interface</div>
+                            <div class="text-white/50 text-xs">/campaign topic audience goal template</div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-0.5 h-6 bg-gradient-to-b from-orange-500 to-orange-500/30"></div>
+                            <svg class="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 16l-6-6h12z"/>
+                            </svg>
+                        </div>
+
+                        <!-- Flask App -->
+                        <div class="arch-node arch-node-primary w-full max-w-lg">
+                            <div class="font-mono text-sm text-amber-400 mb-1">Flask Application (Docker)</div>
+                            <div class="text-white/50 text-xs">Parse command & return 200 OK | Spawn background thread</div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-0.5 h-6 bg-gradient-to-b from-orange-500 to-orange-500/30"></div>
+                            <svg class="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 16l-6-6h12z"/>
+                            </svg>
+                        </div>
+
+                        <!-- Services Row -->
+                        <div class="grid md:grid-cols-2 gap-4 w-full max-w-2xl">
+                            <div class="arch-node">
+                                <div class="font-mono text-sm text-orange-400 mb-1">Brand Context Service</div>
+                                <div class="text-white/50 text-xs">Google Drive API | 17 brand docs</div>
+                            </div>
+                            <div class="arch-node">
+                                <div class="font-mono text-sm text-orange-400 mb-1">Content Generator Service</div>
+                                <div class="text-white/50 text-xs">Claude AI API | 3 variations</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-0.5 h-6 bg-gradient-to-b from-orange-500/50 to-orange-500/20"></div>
+                            <svg class="w-4 h-4 text-orange-500/50" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 16l-6-6h12z"/>
+                            </svg>
+                        </div>
+
+                        <!-- HubSpot -->
+                        <div class="arch-node w-full max-w-md">
+                            <div class="font-mono text-sm text-orange-400 mb-1">HubSpot Service</div>
+                            <div class="text-white/50 text-xs">Clone template | Patch content | Return URLs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Examples -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="reveal delay-2">
+                        <h4 class="text-amber-400 text-sm font-semibold mb-3 uppercase tracking-wide">Service Pattern</h4>
+                        <div class="code-block">
+<pre><span class="comment"># services/</span>
+<span class="comment"># Each service has one job</span>
+<span class="comment"># Easy to test, modify, replace</span>
+
+services/
+  <span class="string">brand_context.py</span>      <span class="comment"># Google Drive</span>
+  <span class="string">content_generator.py</span>  <span class="comment"># Claude AI</span>
+  <span class="string">hubspot.py</span>            <span class="comment"># HubSpot API</span></pre>
+                        </div>
+                    </div>
+
+                    <div class="reveal delay-3">
+                        <h4 class="text-amber-400 text-sm font-semibold mb-3 uppercase tracking-wide">Pluggable Design</h4>
+                        <div class="code-block">
+<pre><span class="keyword">class</span> <span class="function">BrandContextProvider</span>(ABC):
+    <span class="keyword">@abstractmethod</span>
+    <span class="keyword">def</span> <span class="function">get_brand_context</span>(self):
+        <span class="keyword">pass</span>
+
+<span class="comment"># Today: Google Drive</span>
+<span class="comment"># Tomorrow: Notion, S3, SharePoint</span></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scaling Roadmap -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Built to <span class="gradient-text-warm">Grow With Your Business</span>
+                    </h2>
+                </div>
+
+                <!-- Roadmap -->
+                <div class="reveal delay-1 relative">
+                    <div class="roadmap-line hidden md:block"></div>
+
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="roadmap-node">
+                            <div class="roadmap-dot"></div>
+                            <div class="glass-panel-subtle p-5">
+                                <span class="text-amber-400 text-xs font-semibold uppercase tracking-wide">Level 1</span>
+                                <h4 class="text-lg font-bold text-white mt-1 mb-3">Launch</h4>
+                                <ul class="text-white/60 text-sm space-y-1.5 mb-4">
+                                    <li>Working application</li>
+                                    <li>Docker deployment</li>
+                                    <li>Basic authentication</li>
+                                    <li>Single-client config</li>
+                                </ul>
+                                <div class="border-t border-white/10 pt-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-white/40">Timeline</span>
+                                        <span class="text-white">Week 1</span>
+                                    </div>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-white/40">Investment</span>
+                                        <span class="text-amber-400">$8,500+</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="roadmap-node">
+                            <div class="roadmap-dot" style="background: var(--amber)"></div>
+                            <div class="glass-panel-subtle p-5">
+                                <span class="text-amber-400 text-xs font-semibold uppercase tracking-wide">Level 2</span>
+                                <h4 class="text-lg font-bold text-white mt-1 mb-3">Production</h4>
+                                <ul class="text-white/60 text-sm space-y-1.5 mb-4">
+                                    <li>Signature verification</li>
+                                    <li>Gunicorn web server</li>
+                                    <li>Redis queue</li>
+                                    <li>Error monitoring</li>
+                                </ul>
+                                <div class="border-t border-white/10 pt-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-white/40">Timeline</span>
+                                        <span class="text-white">+1 week</span>
+                                    </div>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-white/40">Investment</span>
+                                        <span class="text-amber-400">+$2,500</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="roadmap-node">
+                            <div class="roadmap-dot" style="background: var(--peach)"></div>
+                            <div class="glass-panel-subtle p-5">
+                                <span class="text-amber-400 text-xs font-semibold uppercase tracking-wide">Level 3</span>
+                                <h4 class="text-lg font-bold text-white mt-1 mb-3">Multi-Tenant</h4>
+                                <ul class="text-white/60 text-sm space-y-1.5 mb-4">
+                                    <li>Per-client configs</li>
+                                    <li>Usage tracking</li>
+                                    <li>Team management</li>
+                                    <li>Admin dashboard</li>
+                                </ul>
+                                <div class="border-t border-white/10 pt-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-white/40">Timeline</span>
+                                        <span class="text-white">+2 weeks</span>
+                                    </div>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-white/40">Investment</span>
+                                        <span class="text-amber-400">+$5,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="roadmap-node">
+                            <div class="roadmap-dot" style="background: rgba(255,255,255,0.3)"></div>
+                            <div class="glass-panel-subtle p-5">
+                                <span class="text-amber-400 text-xs font-semibold uppercase tracking-wide">Level 4</span>
+                                <h4 class="text-lg font-bold text-white mt-1 mb-3">Enterprise</h4>
+                                <ul class="text-white/60 text-sm space-y-1.5 mb-4">
+                                    <li>OAuth authentication</li>
+                                    <li>Approval workflows</li>
+                                    <li>A/B testing</li>
+                                    <li>SLA guarantees</li>
+                                </ul>
+                                <div class="border-t border-white/10 pt-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-white/40">Timeline</span>
+                                        <span class="text-white">+3 weeks</span>
+                                    </div>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-white/40">Investment</span>
+                                        <span class="text-amber-400">Custom</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="reveal glass-panel p-8 md:p-12 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                        Ready to Build <span class="gradient-text-warm">Something That Lasts?</span>
+                    </h2>
+                    <p class="text-white/55 mb-10 max-w-xl mx-auto">
+                        Let's prototype your idea in n8n, validate it works, then productionize it as code you own forever.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                        <a href="mailto:scott@scottcollier.com" class="glow-btn font-poppins">
+                            <span class="flex items-center justify-center gap-2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Book Discovery Call
+                            </span>
+                        </a>
+                        <a href="portfolio-design-3.html#work" class="glass-btn font-poppins">
+                            See Live Demos
+                        </a>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                        <a href="mailto:scott@scottcollier.com" class="trust-badge">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            scott@scottcollier.com
+                        </a>
+                        <div class="trust-badge">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            Round Rock, TX
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-10 px-4 border-t border-white/5">
+            <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+                <a href="portfolio-design-3.html" class="text-white font-semibold hover:text-amber-400 transition-colors">Scott Collier</a>
+                <p class="text-white/40 text-sm">&copy; 2024 All rights reserved.</p>
+                <span class="text-white/40 text-sm">AI Automation Architect</span>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+
+            revealElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const revealPoint = windowHeight - 80;
+
+                if (elementTop < revealPoint) {
+                    element.classList.add('active');
+                }
+            });
+        };
+
+        // Initial check
+        revealOnScroll();
+
+        // Check on scroll
+        window.addEventListener('scroll', revealOnScroll);
+
+        // Parallax effect for mouse movement on orbs
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.orb');
+            const mouseX = e.clientX / window.innerWidth - 0.5;
+            const mouseY = e.clientY / window.innerHeight - 0.5;
+
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 8;
+                const x = mouseX * speed;
+                const y = mouseY * speed;
+                orb.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

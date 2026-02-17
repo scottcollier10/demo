@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubSpot Content Generator Case Study | Scott Collier</title>
+    <meta name="description" content="Technical case study: How I built an AI-powered content generation system that reduces email campaign creation from 6 hours to 15 seconds.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange-primary: #f97316;
+            --orange-light: #fb923c;
+            --amber: #fbbf24;
+            --coral: #ff6b6b;
+            --peach: #ffb4a2;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #1a0a00 0%, #0d0d0d 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Animated gradient background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg,
+                #1a0a00 0%,
+                #1f1410 25%,
+                #0d0d0d 50%,
+                #0a0a0a 75%,
+                #120808 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Floating orbs - warm orange tones */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.35;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--orange-primary) 0%, transparent 70%);
+            top: -250px;
+            left: -200px;
+            animation: float1 25s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            animation: float2 22s ease-in-out infinite;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--coral) 0%, transparent 70%);
+            top: 40%;
+            left: 70%;
+            animation: float3 28s ease-in-out infinite;
+        }
+
+        .orb-4 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--peach) 0%, transparent 70%);
+            top: 60%;
+            left: 5%;
+            animation: float4 30s ease-in-out infinite;
+        }
+
+        .orb-5 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--orange-light) 0%, transparent 70%);
+            top: 150%;
+            right: 10%;
+            animation: float5 26s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 40px) scale(1.05); }
+            66% { transform: translate(40px, 80px) scale(0.98); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-60px, -30px) scale(1.03); }
+            66% { transform: translate(-30px, 50px) scale(1.08); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-80px, 60px) scale(1.1); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, -40px) scale(1.05); }
+        }
+
+        @keyframes float5 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-50px, 40px) scale(1.08); }
+        }
+
+        /* Glass panel styles */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow:
+                0 8px 32px var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-subtle {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+        }
+
+        /* Floating card effect */
+        .floating-card {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .floating-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow:
+                0 25px 50px rgba(249, 115, 22, 0.12),
+                0 10px 30px var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glow button */
+        .glow-btn {
+            position: relative;
+            background: linear-gradient(135deg, var(--orange-primary), var(--amber));
+            border: none;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 25px rgba(249, 115, 22, 0.35);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glow-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .glow-btn:hover::before {
+            left: 100%;
+        }
+
+        .glow-btn:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 8px 35px rgba(249, 115, 22, 0.45),
+                0 0 60px rgba(249, 115, 22, 0.2);
+        }
+
+        /* Glass button */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.08);
+        }
+
+        /* Trust badge */
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+        }
+
+        .trust-badge:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .trust-badge svg {
+            color: var(--amber);
+        }
+
+        /* Stat pill */
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(251, 191, 36, 0.15));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, var(--amber) 50%, var(--orange-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-text-warm {
+            background: linear-gradient(135deg, var(--orange-light) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scroll reveal animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+        .delay-5 { transition-delay: 0.5s; }
+
+        /* Section divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.3), transparent);
+            margin: 40px 0;
+        }
+
+        /* Check list */
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(251, 191, 36, 0.3));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
+            color: var(--amber);
+        }
+
+        /* Code block */
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+
+        .code-block .comment { color: rgba(255, 255, 255, 0.4); }
+        .code-block .keyword { color: var(--orange-light); }
+        .code-block .string { color: var(--amber); }
+        .code-block .function { color: var(--peach); }
+        .code-block .decorator { color: var(--coral); }
+
+        /* Architecture node */
+        .arch-node {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .arch-node:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(249, 115, 22, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .arch-node-primary {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(251, 191, 36, 0.15));
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        /* Metric card */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-4px);
+        }
+
+        .metric-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--orange-light), var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        /* Timeline connector */
+        .timeline-connector {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--orange-primary), rgba(255, 255, 255, 0.1));
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--orange-primary);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        /* Flow arrow animation */
+        @keyframes flowPulse {
+            0%, 100% { opacity: 0.4; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(2px); }
+        }
+
+        .flow-arrow {
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+
+        /* Table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .data-table th {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Phase badge */
+        .phase-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--amber));
+            border-radius: 50%;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        /* Lesson card */
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .lesson-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(249, 115, 22, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .orb { opacity: 0.2; }
+            .orb-1, .orb-2 { width: 300px; height: 300px; }
+            .orb-3, .orb-4, .orb-5 { width: 200px; height: 200px; }
+            .metric-value { font-size: 2rem; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(249, 115, 22, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(249, 115, 22, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="gradient-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <!-- Main content -->
+    <main class="relative z-10">
+
+        <!-- Navigation -->
+        <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/20 backdrop-blur-md border-b border-white/5">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <a href="portfolio-design-3.html" class="text-white font-semibold text-lg hover:text-amber-400 transition-colors">Scott Collier</a>
+                <div class="flex gap-6">
+                    <a href="architecture.html" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Methodology</a>
+                    <a href="#problem" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Problem</a>
+                    <a href="#solution" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Solution</a>
+                    <a href="#results" class="text-white/70 hover:text-white transition-colors text-sm font-medium">Results</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="min-h-screen flex items-center justify-center px-4 py-24">
+            <div class="max-w-5xl mx-auto">
+                <div class="glass-panel p-8 md:p-14">
+                    <!-- Pre-headline badge -->
+                    <div class="reveal flex flex-wrap items-center gap-3 mb-8">
+                        <span class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/15 to-amber-500/15 rounded-full border border-white/10">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-white/85">Technical Case Study</span>
+                        </span>
+                        <span class="text-white/40 text-sm">10-day build</span>
+                    </div>
+
+                    <!-- Main headline -->
+                    <h1 class="reveal delay-1 text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
+                        <span class="text-white">HubSpot Content Generator</span>
+                    </h1>
+                    <p class="reveal delay-2 text-xl md:text-2xl gradient-text-warm font-medium mb-6">
+                        From Weekend Prototype to Production-Grade AI Automation
+                    </p>
+
+                    <!-- Description -->
+                    <p class="reveal delay-3 text-base md:text-lg text-white/60 max-w-3xl mb-10 leading-relaxed">
+                        Built an AI-powered content generation system that reduces email campaign creation from
+                        <span class="text-white">6 hours to 15 seconds</span>. Started as an n8n prototype to validate
+                        the concept, then converted to production-ready Python code for client ownership.
+                    </p>
+
+                    <!-- Key metrics -->
+                    <div class="reveal delay-4 grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="metric-card">
+                            <div class="metric-value text-2xl md:text-3xl">15s</div>
+                            <div class="text-white/50 text-xs mt-1">Generation Time</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value text-2xl md:text-3xl">$17.5k</div>
+                            <div class="text-white/50 text-xs mt-1">Annual Savings</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value text-2xl md:text-3xl">85%+</div>
+                            <div class="text-white/50 text-xs mt-1">Brand Alignment</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value text-2xl md:text-3xl">100%</div>
+                            <div class="text-white/50 text-xs mt-1">Client Ownership</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value text-2xl md:text-3xl">5.7</div>
+                            <div class="text-white/50 text-xs mt-1">Month Payback</div>
+                        </div>
+                    </div>
+
+                    <!-- Tech stack -->
+                    <div class="reveal delay-5 flex flex-wrap gap-2 mt-8 justify-center">
+                        <span class="stat-pill">n8n</span>
+                        <span class="stat-pill">Python/Flask</span>
+                        <span class="stat-pill">Docker</span>
+                        <span class="stat-pill">Claude AI</span>
+                        <span class="stat-pill">HubSpot API</span>
+                        <span class="stat-pill">Google Drive API</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section id="problem" class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="reveal inline-block px-4 py-1 mb-4 text-sm font-medium text-red-400 bg-red-500/10 rounded-full border border-red-500/20">
+                        The Challenge
+                    </span>
+                    <h2 class="reveal delay-1 text-3xl md:text-4xl font-bold text-white mb-4">
+                        The Problem
+                    </h2>
+                    <p class="reveal delay-2 text-white/55 text-lg max-w-2xl mx-auto">
+                        Marketing teams running 40+ campaigns per year face significant time, cost, and consistency challenges
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Time Drain -->
+                    <div class="reveal delay-1 glass-panel-subtle floating-card p-6">
+                        <div class="w-12 h-12 mb-4 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-3">Time Drain</h3>
+                        <ul class="text-white/60 text-sm space-y-2">
+                            <li>2 hours to write first draft</li>
+                            <li>2 hours for variations</li>
+                            <li>2 hours review cycles</li>
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <span class="text-red-400 font-bold text-lg">6 hours</span>
+                            <span class="text-white/50 text-sm ml-2">per campaign</span>
+                        </div>
+                    </div>
+
+                    <!-- Cost Burden -->
+                    <div class="reveal delay-2 glass-panel-subtle floating-card p-6">
+                        <div class="w-12 h-12 mb-4 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-3">Cost Burden</h3>
+                        <ul class="text-white/60 text-sm space-y-2">
+                            <li>$75/hour copywriter rate</li>
+                            <li>$450 per campaign</li>
+                            <li>40 campaigns/year</li>
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <span class="text-red-400 font-bold text-lg">$18,000</span>
+                            <span class="text-white/50 text-sm ml-2">annually</span>
+                        </div>
+                    </div>
+
+                    <!-- Brand Inconsistency -->
+                    <div class="reveal delay-3 glass-panel-subtle floating-card p-6">
+                        <div class="w-12 h-12 mb-4 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-3">Brand Drift</h3>
+                        <ul class="text-white/60 text-sm space-y-2">
+                            <li>Different writer interpretations</li>
+                            <li>Tone drift across campaigns</li>
+                            <li>Manual review catches issues late</li>
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <span class="text-red-400 font-bold text-lg">70-75%</span>
+                            <span class="text-white/50 text-sm ml-2">alignment</span>
+                        </div>
+                    </div>
+
+                    <!-- Tool Limitations -->
+                    <div class="reveal delay-4 glass-panel-subtle floating-card p-6">
+                        <div class="w-12 h-12 mb-4 rounded-xl bg-red-500/20 flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-3">Tool Limits</h3>
+                        <ul class="text-white/60 text-sm space-y-2">
+                            <li>Generic AI: No brand memory</li>
+                            <li>HubSpot AI: Limited customization</li>
+                            <li>No multi-variation generation</li>
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <span class="text-red-400 font-bold text-lg">0</span>
+                            <span class="text-white/50 text-sm ml-2">solutions fit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section -->
+        <section id="solution" class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="reveal inline-block px-4 py-1 mb-4 text-sm font-medium text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
+                        The Approach
+                    </span>
+                    <h2 class="reveal delay-1 text-3xl md:text-4xl font-bold text-white mb-4">
+                        Two-Phase Solution
+                    </h2>
+                    <p class="reveal delay-2 text-white/55 text-lg max-w-2xl mx-auto">
+                        Prototype Fast, Productionize Right
+                    </p>
+                </div>
+
+                <!-- Phase 1 -->
+                <div class="reveal delay-1 glass-panel p-8 mb-8">
+                    <div class="flex items-start gap-6 mb-6">
+                        <div class="phase-badge">1</div>
+                        <div>
+                            <span class="text-amber-400 text-sm font-semibold uppercase tracking-wide">Weekend</span>
+                            <h3 class="text-2xl font-bold text-white">n8n Prototype</h3>
+                            <p class="text-white/50 mt-1">Goal: Prove the concept works end-to-end</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-amber-400 text-sm font-semibold mb-4 uppercase tracking-wide">The Workflow</h4>
+                            <div class="code-block text-xs">
+<pre>User types: <span class="string">/campaign webinar CFOs engagement 315102898877</span>
+     <span class="keyword">|</span>
+n8n Workflow:
+  <span class="function">1.</span> Parse Slack command
+  <span class="function">2.</span> Fetch 17 brand files from Google Drive
+  <span class="function">3.</span> Send to Claude AI with prompt template
+  <span class="function">4.</span> Parse JSON response (3 email variations)
+  <span class="function">5.</span> Clone HubSpot template 3 times
+  <span class="function">6.</span> Patch each with generated content
+  <span class="function">7.</span> Return 3 clickable draft links to Slack</pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-amber-400 text-sm font-semibold mb-4 uppercase tracking-wide">Stack & Outcome</h4>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                <span class="stat-pill text-xs">n8n</span>
+                                <span class="stat-pill text-xs">Claude AI API</span>
+                                <span class="stat-pill text-xs">HubSpot API</span>
+                                <span class="stat-pill text-xs">Google Drive</span>
+                                <span class="stat-pill text-xs">Slack Webhooks</span>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">Timeline</span>
+                                    <span class="text-amber-400 font-semibold">6 hours</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                    <span class="text-white/60">Demo</span>
+                                    <span class="text-white">Monday morning</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white/60">Validation</span>
+                                    <span class="text-emerald-400">Concept proven</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="reveal delay-2 glass-panel p-8">
+                    <div class="flex items-start gap-6 mb-6">
+                        <div class="phase-badge">2</div>
+                        <div>
+                            <span class="text-amber-400 text-sm font-semibold uppercase tracking-wide">Following Week</span>
+                            <h3 class="text-2xl font-bold text-white">Production Code</h3>
+                            <p class="text-white/50 mt-1">Goal: Convert to production-ready application client owns</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-white/60 text-sm font-semibold mb-4">Why Convert from n8n?</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <div class="text-center p-3 bg-white/5 rounded-lg">
+                                <div class="text-red-400 text-xs font-medium mb-1">No Git</div>
+                                <div class="text-white/40 text-xs">No version history</div>
+                            </div>
+                            <div class="text-center p-3 bg-white/5 rounded-lg">
+                                <div class="text-red-400 text-xs font-medium mb-1">Hard to Test</div>
+                                <div class="text-white/40 text-xs">Visual workflows</div>
+                            </div>
+                            <div class="text-center p-3 bg-white/5 rounded-lg">
+                                <div class="text-red-400 text-xs font-medium mb-1">Limited Errors</div>
+                                <div class="text-white/40 text-xs">Basic handling</div>
+                            </div>
+                            <div class="text-center p-3 bg-white/5 rounded-lg">
+                                <div class="text-red-400 text-xs font-medium mb-1">Lock-in</div>
+                                <div class="text-white/40 text-xs">Requires subscription</div>
+                            </div>
+                            <div class="text-center p-3 bg-white/5 rounded-lg">
+                                <div class="text-red-400 text-xs font-medium mb-1">Deploy Issues</div>
+                                <div class="text-white/40 text-xs">Client infrastructure</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <h4 class="text-amber-400 text-sm font-semibold mb-6 uppercase tracking-wide">Architecture Decisions</h4>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Service-Oriented -->
+                        <div class="glass-panel-subtle p-5">
+                            <h5 class="text-white font-bold mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-orange-500/30 flex items-center justify-center text-xs text-orange-400">1</span>
+                                Service-Oriented Design
+                            </h5>
+                            <div class="code-block text-xs mb-3">
+<pre>services/
+  <span class="string">brand_context.py</span>      <span class="comment"># Google Drive</span>
+  <span class="string">content_generator.py</span>  <span class="comment"># Claude AI</span>
+  <span class="string">hubspot.py</span>            <span class="comment"># HubSpot API</span></pre>
+                            </div>
+                            <p class="text-white/50 text-xs">Each service has single responsibility. Easy to test, modify, replace.</p>
+                        </div>
+
+                        <!-- Pluggable Architecture -->
+                        <div class="glass-panel-subtle p-5">
+                            <h5 class="text-white font-bold mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-orange-500/30 flex items-center justify-center text-xs text-orange-400">2</span>
+                                Pluggable Architecture
+                            </h5>
+                            <div class="code-block text-xs mb-3">
+<pre><span class="keyword">class</span> <span class="function">BrandContextProvider</span>(ABC):
+    <span class="decorator">@abstractmethod</span>
+    <span class="keyword">def</span> <span class="function">get_brand_context</span>(self):
+        <span class="keyword">pass</span></pre>
+                            </div>
+                            <p class="text-white/50 text-xs">Swap Google Drive for Notion, S3, or SharePoint without touching core logic.</p>
+                        </div>
+
+                        <!-- Background Processing -->
+                        <div class="glass-panel-subtle p-5">
+                            <h5 class="text-white font-bold mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-orange-500/30 flex items-center justify-center text-xs text-orange-400">3</span>
+                                Background Processing
+                            </h5>
+                            <div class="code-block text-xs mb-3">
+<pre><span class="comment"># Slack requires response in 3s</span>
+<span class="comment"># Our workflow takes 15s</span>
+thread = Thread(target=process_campaign)
+thread.start()
+<span class="keyword">return</span> <span class="string">""</span>, <span class="function">200</span>  <span class="comment"># Instant response</span></pre>
+                            </div>
+                            <p class="text-white/50 text-xs">Common async pattern used in Stripe, SendGrid, and more.</p>
+                        </div>
+
+                        <!-- Docker Deployment -->
+                        <div class="glass-panel-subtle p-5">
+                            <h5 class="text-white font-bold mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-orange-500/30 flex items-center justify-center text-xs text-orange-400">4</span>
+                                Docker Deployment
+                            </h5>
+                            <div class="code-block text-xs mb-3">
+<pre>volumes:
+  - ./.env:/app/.env          <span class="comment"># Secrets</span>
+  - ./config.yaml:/app/config <span class="comment"># Settings</span>
+  - ./logs/:/app/logs/        <span class="comment"># Persistent</span></pre>
+                            </div>
+                            <p class="text-white/50 text-xs">Update config, restart in 5 seconds. No rebuild required.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Flow Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Technical <span class="gradient-text-warm">Data Flow</span>
+                    </h2>
+                </div>
+
+                <div class="reveal delay-1 glass-panel p-8">
+                    <div class="flex flex-col items-center gap-4">
+                        <!-- Step 1 -->
+                        <div class="arch-node arch-node-primary w-full max-w-lg">
+                            <div class="text-xs text-white/40 mb-1">STEP 1</div>
+                            <div class="font-mono text-sm text-amber-400 mb-1">Slack Command Interface</div>
+                            <div class="text-white/50 text-xs">/campaign topic audience goal template_id</div>
+                        </div>
+
+                        <div class="flow-arrow text-orange-500">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="arch-node arch-node-primary w-full max-w-lg">
+                            <div class="text-xs text-white/40 mb-1">STEP 2</div>
+                            <div class="font-mono text-sm text-amber-400 mb-1">Flask Application (Docker)</div>
+                            <div class="text-white/50 text-xs">Validate signature | Parse command | Return 200 OK | Spawn background thread</div>
+                        </div>
+
+                        <div class="flow-arrow text-orange-500">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>
+                        </div>
+
+                        <!-- Step 3-4 Row -->
+                        <div class="grid md:grid-cols-2 gap-4 w-full max-w-2xl">
+                            <div class="arch-node">
+                                <div class="text-xs text-white/40 mb-1">STEP 3</div>
+                                <div class="font-mono text-sm text-orange-400 mb-1">Brand Context Service</div>
+                                <div class="text-white/50 text-xs">List files | Categorize | Extract text from 17 docs</div>
+                            </div>
+                            <div class="arch-node">
+                                <div class="text-xs text-white/40 mb-1">STEP 4</div>
+                                <div class="font-mono text-sm text-orange-400 mb-1">Content Generator</div>
+                                <div class="text-white/50 text-xs">Build prompt | Call Claude | Parse 3 variations</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-arrow text-orange-500/50">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>
+                        </div>
+
+                        <!-- Step 5 -->
+                        <div class="arch-node w-full max-w-lg">
+                            <div class="text-xs text-white/40 mb-1">STEP 5</div>
+                            <div class="font-mono text-sm text-orange-400 mb-1">HubSpot Service</div>
+                            <div class="text-white/50 text-xs">Clone template 3x | Find rich text module | Patch content | Return draft URLs</div>
+                        </div>
+
+                        <div class="flow-arrow text-orange-500/30">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>
+                        </div>
+
+                        <!-- Step 6-7 Row -->
+                        <div class="grid md:grid-cols-2 gap-4 w-full max-w-2xl">
+                            <div class="arch-node">
+                                <div class="text-xs text-white/40 mb-1">STEP 6</div>
+                                <div class="font-mono text-sm text-emerald-400 mb-1">Slack Response</div>
+                                <div class="text-white/50 text-xs">POST to response_url with 3 draft links</div>
+                            </div>
+                            <div class="arch-node">
+                                <div class="text-xs text-white/40 mb-1">STEP 7</div>
+                                <div class="font-mono text-sm text-emerald-400 mb-1">Logging</div>
+                                <div class="text-white/50 text-xs">Save JSON: timestamp, command, generation time</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Brand Context Intelligence -->
+        <section class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Brand Context <span class="gradient-text-warm">Intelligence</span>
+                    </h2>
+                    <p class="reveal delay-1 text-white/55 text-lg">17 brand documents auto-categorized and fed to Claude</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="reveal delay-1">
+                        <h4 class="text-amber-400 text-sm font-semibold mb-4 uppercase tracking-wide">Auto-Categorization</h4>
+                        <div class="code-block">
+<pre><span class="function">CATEGORY_PATTERNS</span> = {
+    <span class="string">"voice"</span>: [<span class="string">"voice"</span>, <span class="string">"tone"</span>, <span class="string">"style"</span>],
+    <span class="string">"positioning"</span>: [<span class="string">"position"</span>, <span class="string">"value prop"</span>],
+    <span class="string">"competitors"</span>: [<span class="string">"competitor"</span>, <span class="string">"competitive"</span>],
+    <span class="string">"banned"</span>: [<span class="string">"banned"</span>, <span class="string">"avoid"</span>, <span class="string">"don't"</span>],
+    <span class="string">"examples"</span>: [<span class="string">"example"</span>, <span class="string">"sample"</span>]
+}
+
+<span class="comment"># Auto-discovery examples:</span>
+<span class="comment"># voice-guidelines.docx → Voice</span>
+<span class="comment"># competitor-analysis.pdf → Competitors</span>
+<span class="comment"># banned-phrases.txt → Banned</span></pre>
+                        </div>
+                    </div>
+
+                    <div class="reveal delay-2">
+                        <h4 class="text-amber-400 text-sm font-semibold mb-4 uppercase tracking-wide">Claude Prompt Structure</h4>
+                        <div class="code-block">
+<pre><span class="function">System:</span> You are a brand-aware copywriter
+
+<span class="string">Brand Voice Guidelines:</span>
+[Full text from voice docs]
+
+<span class="string">Positioning:</span>
+[Full text from positioning docs]
+
+<span class="string">Banned Phrases:</span>
+[List from banned docs]
+
+<span class="keyword">User Request:</span>
+Topic: {topic}
+Audience: {audience}
+Goal: {goal}
+
+<span class="function">Generate 3 email variations:</span>
+1. Benefit-focused (ROI)
+2. Story-driven (narrative)
+3. Urgency-based (FOMO)</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results" class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="reveal inline-block px-4 py-1 mb-4 text-sm font-medium text-emerald-400 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                        Outcomes
+                    </span>
+                    <h2 class="reveal delay-1 text-3xl md:text-4xl font-bold text-white mb-4">
+                        Results & Metrics
+                    </h2>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="reveal delay-1 glass-panel p-8 mb-8">
+                    <h3 class="text-xl font-bold text-white mb-6">Performance Improvements</h3>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text-warm mb-2">1,440x</div>
+                            <div class="text-white/60 text-sm">Faster Generation</div>
+                            <div class="text-white/40 text-xs mt-1">6 hours → 15 seconds</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text-warm mb-2">$17.4k</div>
+                            <div class="text-white/60 text-sm">Annual Savings</div>
+                            <div class="text-white/40 text-xs mt-1">After Year 1</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text-warm mb-2">+15%</div>
+                            <div class="text-white/60 text-sm">Brand Alignment</div>
+                            <div class="text-white/40 text-xs mt-1">70% → 85-90%</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text-warm mb-2">21,600x</div>
+                            <div class="text-white/60 text-sm">Throughput Increase</div>
+                            <div class="text-white/40 text-xs mt-1">Potential capacity</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Breakdown -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="reveal delay-2 glass-panel-subtle p-6">
+                        <h4 class="text-red-400/80 text-sm font-semibold mb-4 uppercase tracking-wide">Before: Manual Process</h4>
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <td class="text-white/60">Time per campaign</td>
+                                    <td class="text-white font-mono text-right">6 hours</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-white/60">Cost per campaign</td>
+                                    <td class="text-white font-mono text-right">$450</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-white/60">40 campaigns/year</td>
+                                    <td class="text-red-400 font-mono font-bold text-right">$18,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="reveal delay-3 glass-panel p-6 border-emerald-500/20">
+                        <h4 class="text-emerald-400 text-sm font-semibold mb-4 uppercase tracking-wide">After: Automated System</h4>
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <td class="text-white/60">Time per campaign</td>
+                                    <td class="text-white font-mono text-right">15 seconds</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-white/60">One-time build</td>
+                                    <td class="text-white font-mono text-right">$8,500</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-white/60">Operating cost/year</td>
+                                    <td class="text-emerald-400 font-mono font-bold text-right">$600</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quality Metrics -->
+                <div class="reveal delay-4 glass-panel-subtle p-6 mt-6">
+                    <h4 class="text-amber-400 text-sm font-semibold mb-4 uppercase tracking-wide">A/B Test Results (Sample Campaign)</h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white/5 rounded-xl p-4 text-center">
+                            <div class="text-white/50 text-xs mb-2">Variation 1 (Benefit)</div>
+                            <div class="text-2xl font-bold text-white">22%</div>
+                            <div class="text-white/40 text-xs">open rate</div>
+                            <div class="text-lg font-semibold text-white mt-1">4.2%</div>
+                            <div class="text-white/40 text-xs">click rate</div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 text-center">
+                            <div class="text-white/50 text-xs mb-2">Variation 2 (Story)</div>
+                            <div class="text-2xl font-bold text-white">19%</div>
+                            <div class="text-white/40 text-xs">open rate</div>
+                            <div class="text-lg font-semibold text-white mt-1">3.8%</div>
+                            <div class="text-white/40 text-xs">click rate</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-orange-500/20 to-amber-500/20 rounded-xl p-4 text-center border border-orange-500/30">
+                            <div class="text-amber-400 text-xs mb-2 font-semibold">Variation 3 (Urgency)</div>
+                            <div class="text-2xl font-bold text-white">25%</div>
+                            <div class="text-white/40 text-xs">open rate</div>
+                            <div class="text-lg font-semibold text-emerald-400 mt-1">5.1%</div>
+                            <div class="text-white/40 text-xs">click rate</div>
+                        </div>
+                    </div>
+                    <p class="text-center text-white/50 text-sm mt-4">Best performer: Urgency variation (+25% vs manual baseline)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lessons Learned -->
+        <section class="py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Lessons <span class="gradient-text-warm">Learned</span>
+                    </h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="reveal delay-1 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Prototype Speed Matters</h4>
+                        <p class="text-white/50 text-sm mb-3">n8n allowed 6-hour proof-of-concept. Client saw working demo Monday morning.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Don't write code until concept proven.</p>
+                    </div>
+
+                    <div class="reveal delay-2 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">ABCs Enable Flexibility</h4>
+                        <p class="text-white/50 text-sm mb-3">Abstract Base Classes make it easy to swap providers and test with mocks.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Build interfaces, not implementations.</p>
+                    </div>
+
+                    <div class="reveal delay-3 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Constraints Force Good Design</h4>
+                        <p class="text-white/50 text-sm mb-3">Slack's 3-second timeout forced us to implement proper async patterns.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Embrace constraints as design guides.</p>
+                    </div>
+
+                    <div class="reveal delay-4 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Externalize Configuration</h4>
+                        <p class="text-white/50 text-sm mb-3">Docker volumes for config = switch clients in 5 seconds. No rebuild.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Never bake config into containers.</p>
+                    </div>
+
+                    <div class="reveal delay-5 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <polyline points="9 11 12 14 22 4"></polyline>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Testing Catches Edge Cases</h4>
+                        <p class="text-white/50 text-sm mb-3">Template auto-discovery failed on nested modules. Unit test caught it.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Test real data structures, not ideal cases.</p>
+                    </div>
+
+                    <div class="reveal delay-5 lesson-card">
+                        <div class="w-10 h-10 mb-4 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-orange-400">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Graceful Degradation</h4>
+                        <p class="text-white/50 text-sm mb-3">If Google Drive is down, continue with empty brand context. Partial > failure.</p>
+                        <p class="text-amber-400/80 text-xs font-medium">Build production resilience from day one.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scaling Roadmap -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="reveal text-3xl md:text-4xl font-bold text-white mb-4">
+                        Scaling <span class="gradient-text-warm">Roadmap</span>
+                    </h2>
+                    <p class="reveal delay-1 text-white/55 text-lg">Built to grow with your business</p>
+                </div>
+
+                <div class="reveal delay-1 grid md:grid-cols-4 gap-6">
+                    <!-- Level 1 -->
+                    <div class="glass-panel-subtle p-6 relative">
+                        <div class="absolute -top-3 left-6 px-3 py-1 bg-orange-500 rounded-full text-xs font-bold text-white">Current</div>
+                        <h4 class="text-lg font-bold text-white mt-3 mb-4">Level 1: Launch</h4>
+                        <ul class="text-white/60 text-sm space-y-2 mb-6">
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Working application
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Docker deployment
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Basic auth
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Single client
+                            </li>
+                        </ul>
+                        <div class="border-t border-white/10 pt-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/40">Investment</span>
+                                <span class="text-amber-400 font-semibold">$8,500+</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Level 2 -->
+                    <div class="glass-panel-subtle p-6">
+                        <h4 class="text-lg font-bold text-white mb-4">Level 2: Production</h4>
+                        <ul class="text-white/60 text-sm space-y-2 mb-6">
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Signature verification
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Gunicorn server
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Redis queue
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Error monitoring
+                            </li>
+                        </ul>
+                        <div class="border-t border-white/10 pt-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/40">Add-on</span>
+                                <span class="text-amber-400 font-semibold">+$2,500</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Level 3 -->
+                    <div class="glass-panel-subtle p-6">
+                        <h4 class="text-lg font-bold text-white mb-4">Level 3: Multi-Tenant</h4>
+                        <ul class="text-white/60 text-sm space-y-2 mb-6">
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Per-client configs
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Usage tracking
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Team management
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Admin dashboard
+                            </li>
+                        </ul>
+                        <div class="border-t border-white/10 pt-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/40">Add-on</span>
+                                <span class="text-amber-400 font-semibold">+$5,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Level 4 -->
+                    <div class="glass-panel-subtle p-6">
+                        <h4 class="text-lg font-bold text-white mb-4">Level 4: Enterprise</h4>
+                        <ul class="text-white/60 text-sm space-y-2 mb-6">
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                OAuth auth
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                Approval workflows
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                A/B testing
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-white/30">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                SLA guarantees
+                            </li>
+                        </ul>
+                        <div class="border-t border-white/10 pt-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/40">Investment</span>
+                                <span class="text-amber-400 font-semibold">Custom</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="py-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="reveal glass-panel p-8 md:p-12 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                        Key <span class="gradient-text-warm">Takeaways</span>
+                    </h2>
+
+                    <div class="grid md:grid-cols-3 gap-6 mb-10">
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-amber-500/30 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                            </div>
+                            <h4 class="text-white font-bold mb-2">Start Fast</h4>
+                            <p class="text-white/50 text-sm">n8n prototype in 6 hours proved concept</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-amber-500/30 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                            </div>
+                            <h4 class="text-white font-bold mb-2">Build Right</h4>
+                            <p class="text-white/50 text-sm">Python/Docker production code for ownership</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-amber-500/30 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-400">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-white font-bold mb-2">Ship Forever</h4>
+                            <p class="text-white/50 text-sm">Client owns everything, no subscriptions</p>
+                        </div>
+                    </div>
+
+                    <p class="text-white/60 text-lg mb-8">
+                        This is how modern AI automation should be built: <br>
+                        <span class="text-white font-medium">fast validation, solid engineering, permanent ownership.</span>
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="mailto:scott@scottcollier.com" class="glow-btn">
+                            <span class="flex items-center gap-2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Book Discovery Call
+                            </span>
+                        </a>
+                        <a href="architecture.html" class="glass-btn">
+                            See Full Methodology
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-10 px-4 border-t border-white/5">
+            <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+                <a href="portfolio-design-3.html" class="text-white font-semibold hover:text-amber-400 transition-colors">Scott Collier</a>
+                <div class="flex gap-6">
+                    <a href="mailto:scott@scottcollier.com" class="text-white/50 hover:text-white transition-colors text-sm">scott@scottcollier.com</a>
+                    <a href="https://github.com/scottcollier10/content-generator" class="text-white/50 hover:text-white transition-colors text-sm">GitHub Repo</a>
+                </div>
+                <span class="text-white/40 text-sm">AI Automation Architect</span>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+
+            revealElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const revealPoint = windowHeight - 80;
+
+                if (elementTop < revealPoint) {
+                    element.classList.add('active');
+                }
+            });
+        };
+
+        // Initial check
+        revealOnScroll();
+
+        // Check on scroll
+        window.addEventListener('scroll', revealOnScroll);
+
+        // Parallax effect for mouse movement on orbs
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.orb');
+            const mouseX = e.clientX / window.innerWidth - 0.5;
+            const mouseY = e.clientY / window.innerHeight - 0.5;
+
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 6;
+                const x = mouseX * speed;
+                const y = mouseY * speed;
+                orb.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
